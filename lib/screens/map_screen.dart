@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -24,6 +25,10 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   final MapScreenBloc _bloc = MapScreenBloc();
   final Set<Marker> _markers = <Marker>{};
+  HubConnection hubConnection = HubConnectionBuilder()
+      .withUrl("https://99bb-105-186-246-233.in.ngrok.io/trackinghub")
+      .withAutomaticReconnect()
+      .build();
 
   GoogleMapController? _mapController;
   bool focusOnMyLocation = true;
@@ -38,16 +43,11 @@ class _MapScreenState extends State<MapScreen> {
   LatLng? _meetupLocation;
   Timer? timer;
 
-  HubConnection hubConnection = HubConnectionBuilder()
-      .withUrl("https://99bb-105-186-246-233.in.ngrok.io/trackinghub")
-      .withAutomaticReconnect()
-      .build();
-
   @override
   void initState() {
     super.initState();
     _bloc.add(GetMyCurrentLocation());
-    addCustomIcon();
+    // addCustomIcon();
 
     hubConnection.on("ReceiveMessage", receiveMessage);
     hubConnection.on("ReceiveMeetupLocation", receiveMeetup);
@@ -71,6 +71,7 @@ class _MapScreenState extends State<MapScreen> {
             position: _userCurrentLocation!,
           ),
         );
+        hubConnection;
       });
 
       if (hubConnection.state == HubConnectionState.Disconnected) {
@@ -173,7 +174,7 @@ class _MapScreenState extends State<MapScreen> {
                               CameraPosition(target: newLatLang, zoom: 17)));
 
                       _agentCurrentLocation = newLatLang;
-                      updateMarker('meetup', _agentCurrentLocation!, 'meetup');
+                      updateMarker('meetup', _agentCurrentLocation!, 1);
                       sendMeetup(_agentCurrentLocation!);
                     }
                   },
@@ -203,36 +204,43 @@ class _MapScreenState extends State<MapScreen> {
   void receiveMessage(List<Object?>? parameters) {
     debugPrint('[RECEIVED] message: $parameters');
     if (parameters != null && parameters.length >= 2) {
+      debugPrint('UPDATE DYLAN $parameters');
       final String username = parameters[0] as String;
-      final double latitude = parameters[1] as double;
-      final double longitude = parameters[2] as double;
-
-      final LatLng userLocation = LatLng(latitude, longitude);
-
-      updateMarker(username, userLocation, 'message');
+      debugPrint(username);
+      var latitude = parameters[1].toString();
+      debugPrint('$username, $latitude');
+      var longitude = parameters[2].toString();
+      debugPrint('$username, $latitude, $longitude');
+      final LatLng userLocation =
+          LatLng(double.parse(latitude), double.parse(longitude));
+      debugPrint('UPDATE DYLAN');
+      updateMarker(username, userLocation, 0);
     }
   }
 
   void receiveMeetup(List<Object?>? parameters) {
     debugPrint('[RECEIVED] Meetup: $parameters');
     if (parameters != null && parameters.isNotEmpty) {
-      final double latitude = parameters[1] as double;
-      final double longitude = parameters[2] as double;
+      debugPrint('UPDATE MEETUP');
 
-      final LatLng meetupLocation = LatLng(latitude, longitude);
-      updateMarker("meetup", meetupLocation, 'meetup');
+      var latitude = parameters[1].toString();
+      var longitude = parameters[2].toString();
+
+      final LatLng meetupLocation =
+          LatLng(double.parse(latitude), double.parse(longitude));
+      updateMarker("meetup", meetupLocation, 1);
     }
   }
 
-  void addCustomIcon() {
-    BitmapDescriptor.fromAssetImage(
-            const ImageConfiguration(), "assets/images/wbclogo.png")
-        .then(
-      (icon) => setState(() {
-        markerIcon = icon;
-      }),
-    );
-  }
+  // void addCustomIcon() {
+  //   BitmapDescriptor.fromAssetImage(
+  //           const ImageConfiguration(), "assets/images/wbclogo.png")
+  //       .then(
+  //     (icon) => setState(() {
+  //       markerIcon = icon;
+  //     }),
+  //   );
+  // }
 
   Future<void> _reInitHub() async {
     hubConnection = HubConnectionBuilder()
@@ -247,8 +255,9 @@ class _MapScreenState extends State<MapScreen> {
     await hubConnection.start();
   }
 
-  void updateMarker(String markerId, LatLng location, String type) {
-    if (type == 'meetup') {
+  void updateMarker(String markerId, LatLng location, int type) {
+    if (type > 0) {
+      debugPrint('meetup');
       setState(() {
         _markers.removeWhere((element) => element.markerId.value == markerId);
         _markers.add(
@@ -257,9 +266,11 @@ class _MapScreenState extends State<MapScreen> {
             position: location,
           ),
         );
+        hubConnection;
         // hubConnection = openHubConnection();
       });
-    } else if (type == 'message') {
+    } else if (type == 0) {
+      debugPrint('Dylan');
       setState(() {
         _markers.removeWhere((element) => element.markerId.value == markerId);
         _markers.add(
@@ -268,6 +279,7 @@ class _MapScreenState extends State<MapScreen> {
             position: location,
           ),
         );
+        hubConnection;
         // hubConnection = openHubConnection();
       });
     }
