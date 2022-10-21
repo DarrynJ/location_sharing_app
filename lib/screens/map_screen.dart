@@ -29,16 +29,19 @@ class _MapScreenState extends State<MapScreen> {
   GoogleMapController? _mapController;
   bool focusOnMyLocation = true;
   BitmapDescriptor markerIcon = BitmapDescriptor.defaultMarker;
-  String googleApikey = "AIzaSyBZ4RG4eWW2h_OdquCjr1_d-6bnoIB6U1E";
+  String googleApiKey = "AIzaSyBZ4RG4eWW2h_OdquCjr1_d-6bnoIB6U1E";
   String location = "Search Location";
 
   // Agile Bridge offices
   LatLng initialLocation = const LatLng(-25.777337119077238, 28.25658729797763);
-  LatLng? _currentLocation;
+  LatLng? _userCurrentLocation;
+  LatLng? _agentCurrentLocation;
+  LatLng? _meetupLocation;
   Timer? timer;
 
   HubConnection hubConnection = HubConnectionBuilder()
-      .withUrl("https://db4c-105-186-246-233.in.ngrok.io/trackinghub")
+      .withUrl(
+          "https://blazorserverhub20221021194142.azurewebsites.net/trackinghub")
       .withAutomaticReconnect()
       .build();
 
@@ -52,20 +55,28 @@ class _MapScreenState extends State<MapScreen> {
     hubConnection.on("ReceiveMeetupLocation", receiveMeetup);
 
     hubConnection.start();
+    var count = 1;
     timer = Timer.periodic(const Duration(seconds: 10), (Timer t) async {
       _bloc.add(GetMyCurrentLocation());
+      final lat = initialLocation.latitude + (0.0002 * count++);
+      final long = initialLocation.longitude + (0.0002 * count++);
+      _userCurrentLocation = LatLng(lat, long);
+
+      setState(() {
+        _markers.removeWhere((element) => element.markerId.value == 'Arno');
+        _markers.add(
+          Marker(
+            markerId: MarkerId("Current location"),
+            position: _userCurrentLocation!,
+          ),
+        );
+      });
 
       if (hubConnection.state == HubConnectionState.Disconnected) {
         await hubConnection.start();
       }
 
-      await hubConnection.invoke("SendMessage", args: <Object>
-          //update accordingly
-          [
-        widget.username,
-        _currentLocation!.latitude.toString(),
-        _currentLocation!.longitude.toString()
-      ]);
+      sendMessage(widget.username, _userCurrentLocation!);
     });
   }
 
@@ -83,25 +94,25 @@ class _MapScreenState extends State<MapScreen> {
       listener: ((context, state) async {
         if (state is CurrentLocation) {
           setState(() {
-            _currentLocation = state.location;
+            _userCurrentLocation = state.location;
 
             _markers.add(
               Marker(
                 markerId: const MarkerId("Current location"),
-                position: _currentLocation!,
+                position: _userCurrentLocation!,
               ),
             );
           });
 
           if (_mapController != null && focusOnMyLocation) {
             _mapController!.animateCamera(CameraUpdate.newLatLng(
-              _currentLocation!,
+              _userCurrentLocation!,
             ));
 
             focusOnMyLocation = false;
           }
         } else if (state is MeetupLocationShared) {
-          await _reinitHub();
+          await _reInitHub();
           if (hubConnection.state == HubConnectionState.Connected) {
             await hubConnection.invoke("SetMeetupLocation", args: <Object>
                 //update accordingly
@@ -132,7 +143,7 @@ class _MapScreenState extends State<MapScreen> {
 
                     var place = await PlacesAutocomplete.show(
                         context: context,
-                        apiKey: googleApikey,
+                        apiKey: googleApiKey,
                         mode: Mode.fullscreen,
                         types: [],
                         strictbounds: false,
@@ -142,14 +153,14 @@ class _MapScreenState extends State<MapScreen> {
 
                     if (place != null) {
                       final places = GoogleMapsPlaces(
-                        apiKey: googleApikey,
+                        apiKey: googleApiKey,
                         apiHeaders: await const GoogleApiHeaders().getHeaders(),
                       );
 
                       final detail = await places
                           .getDetailsByPlaceId(place.placeId ?? '0');
                       final geometry = detail.result.geometry!;
-                      final newlatlang =
+                      final newLatLang =
                           LatLng(geometry.location.lat, geometry.location.lng);
 
                       setState(() {
@@ -158,9 +169,13 @@ class _MapScreenState extends State<MapScreen> {
 
                       _mapController?.animateCamera(
                           CameraUpdate.newCameraPosition(
-                              CameraPosition(target: newlatlang, zoom: 17)));
+                              CameraPosition(target: newLatLang, zoom: 17)));
 
-                      _bloc.add(SendMeetupLocation(newlatlang));
+                      _agentCurrentLocation = newLatLang;
+                      updateMarker('meetup', _agentCurrentLocation!);
+                      sendMessage(
+                          'ReceiveMeetupLocation', _userCurrentLocation!);
+                      _bloc.add(SendMeetupLocation(newLatLang));
                     }
                   },
                   child: Container(
@@ -194,34 +209,18 @@ class _MapScreenState extends State<MapScreen> {
 
       final LatLng userLocation = LatLng(latitude, longitude);
 
-      setState(() {
-        _markers.removeWhere((element) => element.markerId.value == username);
-        _markers.add(
-          Marker(
-            markerId: MarkerId(username),
-            position: userLocation,
-          ),
-        );
-      });
+      updateMarker(username, userLocation);
     }
   }
 
   void receiveMeetup(List<Object?>? parameters) {
-    print('[RECEIVED] Meetup: $parameters');
+    debugPrint('[RECEIVED] Meetup: $parameters');
     if (parameters != null && parameters.isNotEmpty) {
       final double latitude = parameters[1] as double;
       final double longitude = parameters[2] as double;
 
       final LatLng meetupLocation = LatLng(latitude, longitude);
-      setState(() {
-        _markers.removeWhere((element) => element.markerId.value == "meetup");
-        _markers.add(
-          Marker(
-            markerId: const MarkerId("meetup"),
-            position: meetupLocation,
-          ),
-        );
-      });
+      updateMarker("meetup", meetupLocation);
     }
   }
 
@@ -235,7 +234,7 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  Future<void> _reinitHub() async {
+  Future<void> _reInitHub() async {
     hubConnection = HubConnectionBuilder()
         .withUrl("https://db4c-105-186-246-233.in.ngrok.io/trackinghub")
         .withAutomaticReconnect(
@@ -246,5 +245,25 @@ class _MapScreenState extends State<MapScreen> {
     hubConnection.on("ReceiveMeetupLocation", receiveMeetup);
 
     await hubConnection.start();
+  }
+
+  void updateMarker(String markerId, LatLng location) {
+    setState(() {
+      _markers.removeWhere((element) => element.markerId.value == "meetup");
+      _markers.add(
+        Marker(
+          markerId: MarkerId(markerId),
+          position: location,
+        ),
+      );
+    });
+  }
+
+  void sendMessage(String name, LatLng location) async {
+    await hubConnection.invoke("SendMessage", args: <Object>[
+      name,
+      location.latitude.toString(),
+      location.longitude.toString()
+    ]);
   }
 }
