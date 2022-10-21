@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:location_sharing_app/navigation/navigator.dart';
 import 'package:location_sharing_app/navigation/routes.dart';
-import 'package:location_sharing_app/screens/map_screen.dart';
 
 void main() {
   runApp(const MyApp());
