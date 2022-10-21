@@ -22,7 +22,12 @@ class _MapScreenState extends State<MapScreen> {
   final MapScreenBloc _bloc = MapScreenBloc();
   GoogleMapController? _mapController;
 
-  String googleApikey = "AIzaSyBZ4RG4eWW2h_OdquCjr1_d-6bnoIB6U1E";
+  bool focusOnMyLocation = true;
+
+  final Set<Marker> _markers = <Marker>{};
+
+  String googleApikey =
+      "AIzaSyCGPG0BidmAmtCvAqm22SpPAqftfH285bg"; //"AIzaSyBZ4RG4eWW2h_OdquCjr1_d-6bnoIB6U1E";
   String location = "Search Location";
 
   // Agile Bridge offices
@@ -37,15 +42,20 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void initState() {
     super.initState();
+    _bloc.add(GetMyCurrentLocation());
     hubConnection.on("ReceiveMessage", receiveMessage);
 
     hubConnection.start();
-    timer = Timer.periodic(Duration(seconds: 5), (Timer t) async {
+    timer = Timer.periodic(const Duration(seconds: 10), (Timer t) async {
       _bloc.add(GetMyCurrentLocation());
+
+      if (hubConnection.state != HubConnectionState.Connected) {
+        await hubConnection.start();
+      }
 
       final result = await hubConnection.invoke("SendMessage", args: <Object>
           //update accordingly
-          ["Joanita", _currentLocation.toString()]);
+          ["Username", _currentLocation.toString()]);
     });
   }
 
@@ -58,20 +68,27 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Widget _buildMapScreen() {
-    BitmapDescriptor markerIcon = BitmapDescriptor.defaultMarker;
-
     return BlocListener(
       bloc: _bloc,
       listener: ((context, state) {
         if (state is CurrentLocation) {
           setState(() {
             _currentLocation = state.location;
+
+            _markers.add(
+              Marker(
+                markerId: const MarkerId("Current location"),
+                position: _currentLocation!,
+              ),
+            );
           });
 
-          if (_mapController != null) {
+          if (_mapController != null && focusOnMyLocation) {
             _mapController!.animateCamera(CameraUpdate.newLatLng(
               _currentLocation!,
             ));
+
+            focusOnMyLocation = false;
           }
         } else if (state is MapScreenError) {}
       }),
@@ -85,18 +102,7 @@ class _MapScreenState extends State<MapScreen> {
             onMapCreated: (GoogleMapController controller) async {
               _mapController = controller;
             },
-            markers: {
-              if (_currentLocation != null)
-                Marker(
-                  markerId: const MarkerId("marker1"),
-                  position: _currentLocation!,
-                  draggable: true,
-                  onDragEnd: (value) {
-                    // value is the new position
-                  },
-                  icon: markerIcon,
-                ),
-            },
+            markers: _markers,
           ),
           Positioned(
               top: 10,
@@ -158,7 +164,26 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   void receiveMessage(List<Object?>? parameters) {
-    print(parameters.toString());
+    if (parameters != null && parameters.length >= 2) {
+      final String username = parameters[0] as String;
+      final List<String> location = (parameters[1] as String)
+          .replaceAll("LatLng(", "")
+          .replaceAll(")", "")
+          .split(",");
+
+      final LatLng userLocation =
+          LatLng(double.parse(location[0]), double.parse(location[1]));
+
+      setState(() {
+        _markers.removeWhere((element) => element.markerId.value == username);
+        _markers.add(
+          Marker(
+            markerId: MarkerId(username),
+            position: userLocation,
+          ),
+        );
+      });
+    }
   }
   //update the marker for other users
 }
