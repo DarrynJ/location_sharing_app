@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:location_sharing_app/widgets/app_bar.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -24,6 +25,7 @@ class _MapScreenState extends State<MapScreen> {
     BitmapDescriptor markerIcon = BitmapDescriptor.defaultMarker;
 
     return Scaffold(
+      appBar: const CustomAppBar(),
       body: GoogleMap(
         initialCameraPosition: CameraPosition(
           target: initialLocation,
