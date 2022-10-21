@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: true,
       title: 'We Track Cars',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.orange,
       ),
       onGenerateRoute: MainNavigator.generateRoute,
       onGenerateInitialRoutes: (String initialRouteName) {

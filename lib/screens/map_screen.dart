@@ -9,6 +9,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:location_sharing_app/screens/map_screen/map_screen_bloc.dart';
 import 'package:signalr_netcore/signalr_client.dart';
+import 'package:location_sharing_app/widgets/app_bar.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -51,9 +52,7 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Center(child: Text("Location Sharing")),
-      ),
+      appBar: const CustomAppBar(),
       body: _buildMapScreen(),
     );
   }
