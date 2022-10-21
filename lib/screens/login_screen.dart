@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../navigation/routes.dart';
 import 'map_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -10,6 +11,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _usernameController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,6 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Container(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
           child: TextField(
+            controller: _usernameController,
             decoration: InputDecoration(
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(90.0),
@@ -53,10 +57,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   backgroundColor: Color.fromARGB(255, 255, 123, 0)),
               child: const Text('Log In'),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MapScreen()),
-                );
+                Navigator.pushNamed(context, Routes.MAP,
+                    arguments: _usernameController.text);
               },
             )),
       ],

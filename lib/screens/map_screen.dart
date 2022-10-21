@@ -12,7 +12,12 @@ import 'package:signalr_netcore/signalr_client.dart';
 import 'package:location_sharing_app/widgets/app_bar.dart';
 
 class MapScreen extends StatefulWidget {
-  const MapScreen({Key? key}) : super(key: key);
+  final String username;
+
+  const MapScreen({
+    Key? key,
+    required this.username,
+  }) : super(key: key);
 
   @override
   State<MapScreen> createState() => _MapScreenState();
@@ -57,7 +62,7 @@ class _MapScreenState extends State<MapScreen> {
       await hubConnection.invoke("SendMessage", args: <Object>
           //update accordingly
           [
-        "User",
+        widget.username,
         _currentLocation!.latitude.toString(),
         _currentLocation!.longitude.toString()
       ]);
@@ -218,7 +223,7 @@ class _MapScreenState extends State<MapScreen> {
 
   void addCustomIcon() {
     BitmapDescriptor.fromAssetImage(
-            const ImageConfiguration(), "assets/car_icon.jpg")
+            const ImageConfiguration(), "assets/images/wbclogo.png")
         .then(
       (icon) => setState(() {
         markerIcon = icon;

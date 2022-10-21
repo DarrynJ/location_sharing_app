@@ -10,10 +10,12 @@ class MainNavigator {
         switch (settings.name) {
           case Routes.HOME:
           case Routes.MAP:
+            final args = settings.arguments as String;
+            return MapScreen(username: args);
           case Routes.LOGIN:
             return const LoginScreen();
           default:
-            return const MapScreen();
+            return const LoginScreen();
         }
       },
     );
