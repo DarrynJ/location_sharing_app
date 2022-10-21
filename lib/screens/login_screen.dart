@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../navigation/routes.dart';
-import 'map_screen.dart';
+import 'package:location_sharing_app/navigation/routes.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
