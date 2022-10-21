@@ -19,46 +19,55 @@ class _LoginScreenState extends State<LoginScreen> {
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        Container(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 70),
-            child: Image.asset(
-              'assets/images/wbclogo.png',
-              height: 200,
-              width: 200,
-            )),
-        Container(
-          padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-          child: const Text('We Track Cars',
-              style: TextStyle(
-                  color: Color.fromARGB(255, 0, 0, 0),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 40)),
+        const Spacer(),
+        Image.asset(
+          'assets/images/wbclogo.png',
+          height: 200,
+          width: 200,
         ),
+        SizedBox(height: 15),
+        const Text('We Track Cars',
+            style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                fontSize: 40)),
+        const Spacer(),
         Container(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-          child: TextField(
-            controller: _usernameController,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(90.0),
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _usernameController,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  labelText: 'Username',
+                ),
               ),
-              labelText: 'Username',
-            ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15)),
+                    backgroundColor: Colors.orange,
+                    foregroundColor: Colors.white,
+                    textStyle: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    )),
+                child: const Text('Log In'),
+                onPressed: () {
+                  Navigator.pushReplacementNamed(context, Routes.HOME,
+                      arguments: _usernameController.text);
+                },
+              ),
+            ],
           ),
         ),
-        Container(
-            height: 80,
-            padding: const EdgeInsets.all(20),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
-                  backgroundColor: Color.fromARGB(255, 255, 123, 0)),
-              child: const Text('Log In'),
-              onPressed: () {
-                Navigator.pushNamed(context, Routes.MAP,
-                    arguments: _usernameController.text);
-              },
-            )),
+        const Spacer(),
       ],
     )));
   }

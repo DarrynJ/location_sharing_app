@@ -7,7 +7,6 @@ import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:location_sharing_app/screens/map_screen/map_screen_bloc.dart';
-import 'package:location_sharing_app/widgets/app_bar.dart';
 import 'package:signalr_netcore/signalr_client.dart';
 
 class MapScreen extends StatefulWidget {
@@ -72,7 +71,11 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(),
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+      ),
       body: _buildMapScreen(),
     );
   }
@@ -125,7 +128,7 @@ class _MapScreenState extends State<MapScreen> {
             markers: _markers,
           ),
           Positioned(
-              top: 10,
+              top: 80,
               child: InkWell(
                   onTap: () async {
                     await hubConnection.stop();
@@ -133,7 +136,7 @@ class _MapScreenState extends State<MapScreen> {
                     var place = await PlacesAutocomplete.show(
                         context: context,
                         apiKey: googleApikey,
-                        mode: Mode.fullscreen,
+                        mode: Mode.overlay,
                         types: [],
                         strictbounds: false,
                         onError: (err) {
