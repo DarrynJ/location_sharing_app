@@ -64,10 +64,29 @@ class _LoginScreenState extends State<LoginScreen> {
                       arguments: _usernameController.text);
                 },
               ),
+              const SizedBox(height: 20),
             ],
           ),
         ),
         const Spacer(),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Flexible(
+                child: Text(
+                  'By making use of this App the user consents to the use of their location data and to be tracked 20 minutes prior to the appointment',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.black54),
+                ),
+              )
+            ],
+          ),
+        ),
+        const SizedBox(
+          height: 15,
+        )
       ],
     )));
   }
