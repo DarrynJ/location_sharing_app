@@ -38,7 +38,7 @@ class _MapScreenState extends State<MapScreen> {
   LatLng? _meetupLocation;
   Timer? timer;
 
-  HubConnection hubConnection = HubConnectionBuilder()
+  static HubConnection hubConnection = HubConnectionBuilder()
       .withUrl("https://99bb-105-186-246-233.in.ngrok.io/trackinghub")
       .withAutomaticReconnect()
       .build();
@@ -54,14 +54,15 @@ class _MapScreenState extends State<MapScreen> {
 
     hubConnection.start();
     var count = 1;
-    timer = Timer.periodic(const Duration(seconds: 10), (Timer t) async {
+    timer = Timer.periodic(const Duration(seconds: 5), (Timer t) async {
       _bloc.add(GetMyCurrentLocation());
       final lat = initialLocation.latitude + (0.0002 * count++);
       final long = initialLocation.longitude + (0.0002 * count++);
       _userCurrentLocation = LatLng(lat, long);
 
       setState(() {
-        _markers.removeWhere((element) => element.markerId.value == 'Arno');
+        _markers.removeWhere(
+            (element) => element.markerId.value == widget.username);
         _markers.add(
           Marker(
             markerId: MarkerId("Current location"),
@@ -174,7 +175,7 @@ class _MapScreenState extends State<MapScreen> {
                               CameraPosition(target: newLatLang, zoom: 17)));
 
                       _agentCurrentLocation = newLatLang;
-                      updateMarker('meetup', _agentCurrentLocation!);
+                      updateMarker('meetup', _agentCurrentLocation!, 'meetup');
                       sendMessage('SetMeetupLocation', _userCurrentLocation!);
                       _bloc.add(SendMeetupLocation(newLatLang));
                     }
@@ -211,7 +212,7 @@ class _MapScreenState extends State<MapScreen> {
 
       final LatLng userLocation = LatLng(latitude, longitude);
 
-      updateMarker(username, userLocation);
+      updateMarker(username, userLocation, 'message');
     }
   }
 
@@ -222,7 +223,7 @@ class _MapScreenState extends State<MapScreen> {
       final double longitude = parameters[2] as double;
 
       final LatLng meetupLocation = LatLng(latitude, longitude);
-      updateMarker("meetup", meetupLocation);
+      updateMarker("meetup", meetupLocation, 'meetup');
     }
   }
 
@@ -249,16 +250,28 @@ class _MapScreenState extends State<MapScreen> {
     await hubConnection.start();
   }
 
-  void updateMarker(String markerId, LatLng location) {
-    setState(() {
-      _markers.removeWhere((element) => element.markerId.value == "meetup");
-      _markers.add(
-        Marker(
-          markerId: MarkerId(markerId),
-          position: location,
-        ),
-      );
-    });
+  void updateMarker(String markerId, LatLng location, String type) {
+    if (type == 'meetup') {
+      setState(() {
+        _markers.removeWhere((element) => element.markerId.value == "meetup");
+        _markers.add(
+          Marker(
+            markerId: MarkerId(markerId),
+            position: location,
+          ),
+        );
+      });
+    } else if (type == 'message') {
+      setState(() {
+        _markers.removeWhere((element) => element.markerId.value == markerId);
+        _markers.add(
+          Marker(
+            markerId: MarkerId(markerId),
+            position: location,
+          ),
+        );
+      });
+    }
   }
 
   void sendMessage(String name, LatLng location) async {
