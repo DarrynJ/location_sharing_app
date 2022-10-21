@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Colors.orange,
                     ],
                   )),
-              child: const Text("Hello Isobel!",
+              child: const Text("Hello There!",
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Colors.orange,
               ],
             )),
-        child: const Text("Hello Isobel!",
+        child: const Text("Hello There!",
             style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
