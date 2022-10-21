@@ -11,6 +11,7 @@ class MapScreenBloc extends Bloc<MapScreenEvent, MapScreenState> {
     on<MapScreenEvent>((event, emit) {});
     on<GetMyCurrentLocation>(_getMyCurrentLocation);
     on<ShareLocation>(_shareCurrentLocation);
+    on<SendMeetupLocation>(_sendMeetupLocation);
   }
 
   _getMyCurrentLocation(
@@ -54,6 +55,16 @@ class MapScreenBloc extends Bloc<MapScreenEvent, MapScreenState> {
     } catch (e) {
       print(e);
       emit(MapScreenError(MapScreenErrors.LOCATION_SHARING_ERROR));
+    }
+  }
+
+  _sendMeetupLocation(
+      SendMeetupLocation event, Emitter<MapScreenState> emit) async {
+    try {
+      emit(MeetupLocationShared(event.location));
+    } catch (e) {
+      print(e);
+      emit(MapScreenError(MapScreenErrors.DEFAULT));
     }
   }
 }

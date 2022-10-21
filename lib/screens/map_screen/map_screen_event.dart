@@ -10,3 +10,9 @@ class ShareLocation extends MapScreenEvent {
 }
 
 class GetMyCurrentLocation extends MapScreenEvent {}
+
+class SendMeetupLocation extends MapScreenEvent {
+  final LatLng location;
+
+  SendMeetupLocation(this.location);
+}

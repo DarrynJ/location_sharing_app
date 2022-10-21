@@ -20,14 +20,12 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   final MapScreenBloc _bloc = MapScreenBloc();
-  GoogleMapController? _mapController;
-
-  bool focusOnMyLocation = true;
-
   final Set<Marker> _markers = <Marker>{};
 
-  String googleApikey =
-      "AIzaSyCGPG0BidmAmtCvAqm22SpPAqftfH285bg"; //"AIzaSyBZ4RG4eWW2h_OdquCjr1_d-6bnoIB6U1E";
+  GoogleMapController? _mapController;
+  bool focusOnMyLocation = true;
+  BitmapDescriptor markerIcon = BitmapDescriptor.defaultMarker;
+  String googleApikey = "AIzaSyBZ4RG4eWW2h_OdquCjr1_d-6bnoIB6U1E";
   String location = "Search Location";
 
   // Agile Bridge offices
@@ -43,19 +41,26 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     super.initState();
     _bloc.add(GetMyCurrentLocation());
+    addCustomIcon();
+
     hubConnection.on("ReceiveMessage", receiveMessage);
+    hubConnection.on("ReceiveMeetupLocation", receiveMeetup);
 
     hubConnection.start();
     timer = Timer.periodic(const Duration(seconds: 10), (Timer t) async {
       _bloc.add(GetMyCurrentLocation());
 
-      if (hubConnection.state != HubConnectionState.Connected) {
+      if (hubConnection.state == HubConnectionState.Disconnected) {
         await hubConnection.start();
       }
 
-      final result = await hubConnection.invoke("SendMessage", args: <Object>
+      await hubConnection.invoke("SendMessage", args: <Object>
           //update accordingly
-          ["Username", _currentLocation.toString()]);
+          [
+        "User",
+        _currentLocation!.latitude.toString(),
+        _currentLocation!.longitude.toString()
+      ]);
     });
   }
 
@@ -70,7 +75,7 @@ class _MapScreenState extends State<MapScreen> {
   Widget _buildMapScreen() {
     return BlocListener(
       bloc: _bloc,
-      listener: ((context, state) {
+      listener: ((context, state) async {
         if (state is CurrentLocation) {
           setState(() {
             _currentLocation = state.location;
@@ -90,6 +95,13 @@ class _MapScreenState extends State<MapScreen> {
 
             focusOnMyLocation = false;
           }
+        } else if (state is MeetupLocationShared) {
+          await hubConnection.invoke("SetMeetupLocation", args: <Object>
+              //update accordingly
+              [
+            state.sharedLocation.latitude.toString(),
+            state.sharedLocation.longitude.toString()
+          ]);
         } else if (state is MapScreenError) {}
       }),
       child: Stack(
@@ -132,12 +144,13 @@ class _MapScreenState extends State<MapScreen> {
 
                       setState(() {
                         location = place.description.toString();
-                        _currentLocation = newlatlang;
                       });
 
                       _mapController?.animateCamera(
                           CameraUpdate.newCameraPosition(
                               CameraPosition(target: newlatlang, zoom: 17)));
+
+                      _bloc.add(SendMeetupLocation(newlatlang));
                     }
                   },
                   child: Container(
@@ -166,13 +179,10 @@ class _MapScreenState extends State<MapScreen> {
   void receiveMessage(List<Object?>? parameters) {
     if (parameters != null && parameters.length >= 2) {
       final String username = parameters[0] as String;
-      final List<String> location = (parameters[1] as String)
-          .replaceAll("LatLng(", "")
-          .replaceAll(")", "")
-          .split(",");
+      final double latitude = parameters[1] as double;
+      final double longitude = parameters[2] as double;
 
-      final LatLng userLocation =
-          LatLng(double.parse(location[0]), double.parse(location[1]));
+      final LatLng userLocation = LatLng(latitude, longitude);
 
       setState(() {
         _markers.removeWhere((element) => element.markerId.value == username);
@@ -185,5 +195,34 @@ class _MapScreenState extends State<MapScreen> {
       });
     }
   }
-  //update the marker for other users
+
+  void receiveMeetup(List<Object?>? parameters) {
+    print('[RECEIVED] Meetup: $parameters');
+    if (parameters != null && parameters.isNotEmpty) {
+      final double latitude = parameters[1] as double;
+      final double longitude = parameters[2] as double;
+
+      final LatLng meetupLocation = LatLng(latitude, longitude);
+      setState(() {
+        _markers.removeWhere((element) => element.markerId.value == "meetup");
+        _markers.add(
+          Marker(
+            markerId: const MarkerId("meetup"),
+            position: meetupLocation,
+            icon: BitmapDescriptor.defaultMarker,
+          ),
+        );
+      });
+    }
+  }
+
+  void addCustomIcon() {
+    BitmapDescriptor.fromAssetImage(
+            const ImageConfiguration(), "assets/car_icon.jpg")
+        .then(
+      (icon) => setState(() {
+        markerIcon = icon;
+      }),
+    );
+  }
 }

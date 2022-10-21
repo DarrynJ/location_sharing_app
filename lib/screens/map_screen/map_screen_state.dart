@@ -24,3 +24,9 @@ class MapScreenError extends MapScreenState {
 
   MapScreenError(this.error);
 }
+
+class MeetupLocationShared extends MapScreenState {
+  final LatLng sharedLocation;
+
+  MeetupLocationShared(this.sharedLocation);
+}
