@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:location_sharing_app/navigation/navigator.dart';
 import 'package:location_sharing_app/navigation/routes.dart';
-import 'package:location_sharing_app/screens/map_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -25,11 +24,10 @@ class MyApp extends StatelessWidget {
     InitialStartupRoute initRoute = InitialStartupRoute(Routes.LOGIN);
 
     return MaterialApp(
-      debugShowCheckedModeBanner: true,
       title: 'We Track Cars',
       theme: ThemeData(
         primarySwatch: Colors.orange,
-        primaryColor: Colors.orange,
+        primaryColor: Color(0xffb65209),
         fontFamily: 'OpenSans',
       ),
       onGenerateRoute: MainNavigator.generateRoute,

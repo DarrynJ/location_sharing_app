@@ -10,7 +10,8 @@ class MainNavigator {
       builder: (_) {
         switch (settings.name) {
           case Routes.HOME:
-            return const HomeScreen();
+            final args = settings.arguments as String;
+            return HomeScreen(username: args);
           case Routes.MAP:
             final args = settings.arguments as String;
             return MapScreen(username: args);
