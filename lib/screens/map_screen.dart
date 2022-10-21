@@ -39,8 +39,7 @@ class _MapScreenState extends State<MapScreen> {
   Timer? timer;
 
   HubConnection hubConnection = HubConnectionBuilder()
-      .withUrl(
-          "https://blazorserverhub20221021194142.azurewebsites.net/trackinghub")
+      .withUrl("https://99bb-105-186-246-233.in.ngrok.io/trackinghub")
       .withAutomaticReconnect()
       .build();
 
@@ -146,7 +145,7 @@ class _MapScreenState extends State<MapScreen> {
 
                     var place = await PlacesAutocomplete.show(
                         context: context,
-                        apiKey: googleApikey,
+                        apiKey: googleApiKey,
                         mode: Mode.overlay,
                         types: [],
                         strictbounds: false,
@@ -176,8 +175,7 @@ class _MapScreenState extends State<MapScreen> {
 
                       _agentCurrentLocation = newLatLang;
                       updateMarker('meetup', _agentCurrentLocation!);
-                      sendMessage(
-                          'ReceiveMeetupLocation', _userCurrentLocation!);
+                      sendMessage('SetMeetupLocation', _userCurrentLocation!);
                       _bloc.add(SendMeetupLocation(newLatLang));
                     }
                   },
@@ -205,6 +203,7 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   void receiveMessage(List<Object?>? parameters) {
+    debugPrint('[RECEIVED] message: $parameters');
     if (parameters != null && parameters.length >= 2) {
       final String username = parameters[0] as String;
       final double latitude = parameters[1] as double;
