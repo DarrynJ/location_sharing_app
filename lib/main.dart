@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:location_sharing_app/screens/map_screen.dart';
+import 'package:location_sharing_app/navigation/navigator.dart';
+import 'package:location_sharing_app/navigation/routes.dart';
 
 void main() {
   runApp(const MyApp());
 }
+
+class InitialStartupRoute {
+  final String path;
+  dynamic args;
+
+  InitialStartupRoute(this.path, {this.args});
+}
+
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -11,13 +21,22 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    InitialStartupRoute initRoute = InitialStartupRoute(Routes.MAP);
+
     return MaterialApp(
       debugShowCheckedModeBanner: true,
-      title: 'Location Sharing Demo',
+      title: 'We Track Cars',
       theme: ThemeData(
         primarySwatch: Colors.orange,
       ),
-      home: const MapScreen(),
+      onGenerateRoute: MainNavigator.generateRoute,
+      onGenerateInitialRoutes: (String initialRouteName) {
+        return [
+          MainNavigator.generateRoute(
+              RouteSettings(name: initRoute.path, arguments: initRoute.args))
+        ];
+      },
+      navigatorObservers: [routeObserver],
     );
   }
 }
