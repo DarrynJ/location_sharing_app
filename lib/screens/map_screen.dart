@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
+import 'package:location_sharing_app/screens/map_screen/map_screen_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -10,6 +11,9 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
+  final MapScreenBloc _bloc = MapScreenBloc();
+  GoogleMapController? _mapController;
+
   // Agile Bridge offices
   LatLng initialLocation = const LatLng(-25.777337119077238, 28.25658729797763);
   LatLng? _currentLocation;
@@ -17,30 +21,45 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void initState() {
     super.initState();
+
+    _bloc.add(GetMyCurrentLocation());
   }
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Center(child: Text("Location Sharing")),
+      ),
+      body: _buildMapScreen(),
+    );
+  }
+
+  Widget _buildMapScreen() {
     BitmapDescriptor markerIcon = BitmapDescriptor.defaultMarker;
 
-    return Scaffold(
-      body: GoogleMap(
+    return BlocListener(
+      bloc: _bloc,
+      listener: ((context, state) {
+        if (state is CurrentLocation) {
+          setState(() {
+            _currentLocation = state.location;
+          });
+
+          if (_mapController != null) {
+            _mapController!.animateCamera(CameraUpdate.newLatLng(
+              _currentLocation!,
+            ));
+          }
+        } else if (state is MapScreenError) {}
+      }),
+      child: GoogleMap(
         initialCameraPosition: CameraPosition(
           target: initialLocation,
           zoom: 14,
         ),
         onMapCreated: (GoogleMapController controller) async {
-          final _locationData = await _initLocation();
-          if (_locationData != null) {
-            controller.animateCamera(CameraUpdate.newLatLng(
-              LatLng(_locationData.latitude!, _locationData.longitude!),
-            ));
-
-            setState(() {
-              _currentLocation =
-                  LatLng(_locationData.latitude!, _locationData.longitude!);
-            });
-          }
+          _mapController = controller;
         },
         markers: {
           if (_currentLocation != null)
@@ -56,33 +75,5 @@ class _MapScreenState extends State<MapScreen> {
         },
       ),
     );
-  }
-
-  Future<LocationData?> _initLocation() async {
-    Location location = Location();
-
-    bool _serviceEnabled;
-    PermissionStatus _permissionGranted;
-    LocationData _locationData;
-
-    _serviceEnabled = await location.serviceEnabled();
-    if (!_serviceEnabled) {
-      _serviceEnabled = await location.requestService();
-      if (!_serviceEnabled) {
-        return null;
-      }
-    }
-
-    _permissionGranted = await location.hasPermission();
-    if (_permissionGranted == PermissionStatus.denied) {
-      _permissionGranted = await location.requestPermission();
-      if (_permissionGranted != PermissionStatus.granted) {
-        return null;
-      }
-    }
-
-    _locationData = await location.getLocation();
-
-    return _locationData;
   }
 }
