@@ -20,45 +20,53 @@ class _LoginScreenState extends State<LoginScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         Container(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 70),
-            child: Image.asset(
-              'assets/images/wbclogo.png',
-              height: 200,
-              width: 200,
-            )),
-        Container(
-          padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-          child: const Text('We Track Cars',
-              style: TextStyle(
-                  color: Color.fromARGB(255, 0, 0, 0),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 40)),
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 70),
+          child: Image.asset(
+            'assets/images/wbclogo.png',
+            height: 200,
+            width: 200,
+          ),
         ),
         Container(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+          padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+          child: const Text(
+            'We Track Cars',
+            style: TextStyle(
+                color: Color.fromARGB(255, 0, 0, 0),
+                fontWeight: FontWeight.bold,
+                fontSize: 40),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.fromLTRB(20, 30, 20, 0),
           child: TextField(
             controller: _usernameController,
             decoration: InputDecoration(
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(90.0),
+                borderRadius: BorderRadius.circular(10.0),
               ),
               labelText: 'Username',
             ),
           ),
         ),
         Container(
-            height: 80,
-            padding: const EdgeInsets.all(20),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
-                  backgroundColor: Color.fromARGB(255, 255, 123, 0)),
-              child: const Text('Log In'),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(0, 30, 0, 0),
+            child: MaterialButton(
+              height: 50.5,
+              child: const Text("Login"),
+              color: Colors.orange,
+              textColor: Colors.white,
+              minWidth: 320.0,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
               onPressed: () {
                 Navigator.pushNamed(context, Routes.MAP,
                     arguments: _usernameController.text);
               },
-            )),
+            ),
+          ),
+        ),
       ],
     )));
   }
