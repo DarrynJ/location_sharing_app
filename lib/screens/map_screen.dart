@@ -5,11 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_google_places_hoc081098/flutter_google_places_hoc081098.dart';
 import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:location_sharing_app/screens/map_screen/map_screen_bloc.dart';
-import 'package:signalr_netcore/signalr_client.dart';
 import 'package:location_sharing_app/widgets/app_bar.dart';
+import 'package:signalr_netcore/signalr_client.dart';
 
 class MapScreen extends StatefulWidget {
   final String username;

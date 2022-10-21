@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:location_sharing_app/navigation/routes.dart';
 import 'package:location_sharing_app/screens/login_screen.dart';
+import 'package:location_sharing_app/screens/home_screen.dart';
 import 'package:location_sharing_app/screens/map_screen.dart';
 
 class MainNavigator {
@@ -9,6 +10,7 @@ class MainNavigator {
       builder: (_) {
         switch (settings.name) {
           case Routes.HOME:
+            return const HomeScreen();
           case Routes.MAP:
             final args = settings.arguments as String;
             return MapScreen(username: args);
