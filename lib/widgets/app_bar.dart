@@ -27,9 +27,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => const HomeScreen()));
         },
-        child:
-            const Icon(Icons.home, color: Colors.white // add custom icons also
-                ),
+        child: const Icon(Icons.home, color: Colors.white),
       ),
     );
   }
