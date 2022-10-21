@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:location_sharing_app/navigation/routes.dart';
 import 'package:location_sharing_app/widgets/app_bar.dart';
 
@@ -54,7 +55,11 @@ class HomeScreen extends StatelessWidget {
         _currentAppointmentCard(),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [smallCard(), smallCard()],
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            smallCard(Icons.phone),
+            smallCard(Icons.history),
+          ],
         ),
         const SizedBox(
           height: 20,
@@ -112,7 +117,7 @@ class HomeScreen extends StatelessWidget {
     return Container(
         height: 200,
         width: double.infinity,
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(20),
         margin: const EdgeInsets.all(20),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
@@ -130,28 +135,69 @@ class HomeScreen extends StatelessWidget {
                 Colors.orange,
               ],
             )),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: const [
-            Text(
-              "Upcoming Appointment",
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  fontSize: 18),
-            ),
-            SizedBox(height: 10),
-            Text(
-              "123 Street Address drive",
-              style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white70,
-                  fontSize: 18),
-            ),
-            SizedBox(height: 20),
-            Text(
-              "123 Street Address drive",
-              style: TextStyle(color: Colors.white, fontSize: 14),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Column(
+              children: [
+                const Text(
+                  "Upcoming Appointment",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 18),
+                ),
+                const SizedBox(height: 25),
+                Container(
+                  decoration: BoxDecoration(
+                      color: Colors.white54.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(15)),
+                  padding: EdgeInsets.all(12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "123 Francis Baard Street, Pretoria \nCentral, Pretoria",
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            fontSize: 14),
+                      ),
+                      const SizedBox(width: 10),
+                      GestureDetector(
+                        onTap: (() async {
+                          await Clipboard.setData(const ClipboardData(
+                                  text:
+                                      '123 Francis Baard Street, Pretoria Central, Pretoria'))
+                              .then((_) {
+                            print('Copied');
+                          });
+                        }),
+                        child: const Icon(
+                          Icons.copy,
+                          color: Colors.white,
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: const [
+                    Text(
+                      "Amy Farrah Fowler",
+                      style: TextStyle(color: Colors.white, fontSize: 14),
+                    ),
+                    SizedBox(width: 40),
+                    Text(
+                      "Prius (XW30)",
+                      style: TextStyle(color: Colors.white, fontSize: 14),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ],
         ));
@@ -252,32 +298,40 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget smallCard() {
-    return Container(
-        height: 100,
-        alignment: Alignment.center,
-        margin: const EdgeInsets.all(10),
-        padding: const EdgeInsets.all(30),
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(15),
-            boxShadow: [
-              BoxShadow(
-                  color: Colors.grey.shade500,
-                  blurRadius: 20,
-                  offset: const Offset(0, 5))
-            ],
-            gradient: const LinearGradient(
-              begin: Alignment.centerRight,
-              end: Alignment.centerLeft,
-              colors: [
-                Colors.pink,
-                Colors.orange,
+  Widget smallCard(IconData icon) {
+    return Expanded(
+      child: MaterialButton(
+        onPressed: () {},
+        child: Container(
+            height: 100,
+            alignment: Alignment.center,
+            margin: const EdgeInsets.all(5),
+            padding: const EdgeInsets.all(30),
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.grey.shade500,
+                      blurRadius: 20,
+                      offset: const Offset(0, 5))
+                ],
+                gradient: const LinearGradient(
+                  begin: Alignment.centerRight,
+                  end: Alignment.centerLeft,
+                  colors: [
+                    Colors.pink,
+                    Colors.orange,
+                  ],
+                )),
+            child: Column(
+              children: [
+                Icon(
+                  icon,
+                  size: 40,
+                ),
               ],
             )),
-        child: const Text("Hello There!",
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                fontSize: 16)));
+      ),
+    );
   }
 }
