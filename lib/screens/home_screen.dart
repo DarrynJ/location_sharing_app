@@ -33,7 +33,7 @@ class HomeScreen extends StatelessWidget {
                       Colors.orange,
                     ],
                   )),
-              child: const Text("Hello Isobel!",
+              child: const Text("Hello There!",
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -179,7 +179,7 @@ class HomeScreen extends StatelessWidget {
                 Colors.orange,
               ],
             )),
-        child: const Text("Hello Isobel!",
+        child: const Text("Hello There!",
             style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
