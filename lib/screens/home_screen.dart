@@ -45,14 +45,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontSize: 25))),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [smallCard(), smallCard()],
+            children: [smallCard("Appointments"), smallCard("Chat")],
           ),
         ],
       ),
     );
   }
 
-  Widget smallCard() {
+  Widget smallCard(String title) {
     return Container(
         height: 100,
         alignment: Alignment.center,
@@ -64,18 +64,18 @@ class _HomeScreenState extends State<HomeScreen> {
               BoxShadow(
                   color: Colors.grey.shade500,
                   blurRadius: 20,
-                  offset: Offset(0, 5))
+                  offset: const Offset(0, 5))
             ],
             gradient: const LinearGradient(
-              begin: Alignment.centerRight,
-              end: Alignment.centerLeft,
+              begin: Alignment.bottomRight,
+              end: Alignment.topLeft,
               colors: [
                 Colors.pink,
                 Colors.orange,
               ],
             )),
-        child: const Text("Hello Isobel!",
-            style: TextStyle(
+        child: Text(title,
+            style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
                 fontSize: 16)));
