@@ -10,21 +10,13 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-  LatLng? initialLocation = const LatLng(
-      -25.777337119077238, 28.25658729797763); // Agile Bridge offices
+  // Agile Bridge offices
+  LatLng initialLocation = const LatLng(-25.777337119077238, 28.25658729797763);
+  LatLng? _currentLocation;
 
   @override
   void initState() {
     super.initState();
-
-    _initLocation().then((value) => {
-          if (value != null)
-            {
-              setState(() {
-                initialLocation = LatLng(value.latitude!, value.longitude!);
-              })
-            }
-        });
   }
 
   @override
@@ -34,19 +26,33 @@ class _MapScreenState extends State<MapScreen> {
     return Scaffold(
       body: GoogleMap(
         initialCameraPosition: CameraPosition(
-          target: initialLocation!,
+          target: initialLocation,
           zoom: 14,
         ),
+        onMapCreated: (GoogleMapController controller) async {
+          final _locationData = await _initLocation();
+          if (_locationData != null) {
+            controller.animateCamera(CameraUpdate.newLatLng(
+              LatLng(_locationData.latitude!, _locationData.longitude!),
+            ));
+
+            setState(() {
+              _currentLocation =
+                  LatLng(_locationData.latitude!, _locationData.longitude!);
+            });
+          }
+        },
         markers: {
-          Marker(
-            markerId: const MarkerId("marker1"),
-            position: initialLocation!,
-            draggable: true,
-            onDragEnd: (value) {
-              // value is the new position
-            },
-            icon: markerIcon,
-          ),
+          if (_currentLocation != null)
+            Marker(
+              markerId: const MarkerId("marker1"),
+              position: _currentLocation!,
+              draggable: true,
+              onDragEnd: (value) {
+                // value is the new position
+              },
+              icon: markerIcon,
+            ),
         },
       ),
     );
