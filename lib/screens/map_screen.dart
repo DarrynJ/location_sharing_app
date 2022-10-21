@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_google_places_hoc081098/flutter_google_places_hoc081098.dart';
@@ -6,6 +8,12 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:location_sharing_app/screens/map_screen/map_screen_bloc.dart';
+<<<<<<< Updated upstream
+=======
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:signalr_flutter/signalr_flutter.dart';
+import 'package:signalr_netcore/signalr_client.dart';
+>>>>>>> Stashed changes
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -17,19 +25,37 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   final MapScreenBloc _bloc = MapScreenBloc();
   GoogleMapController? _mapController;
+<<<<<<< Updated upstream
 
   String googleApikey = "AIzaSyBZ4RG4eWW2h_OdquCjr1_d-6bnoIB6U1E";
   String location = "Search Location";
 
+=======
+  late SignalR signalR;
+  String _signalRStatus = 'unkown';
+>>>>>>> Stashed changes
   // Agile Bridge offices
   LatLng initialLocation = const LatLng(-25.777337119077238, 28.25658729797763);
   LatLng? _currentLocation;
+  Timer? timer;
+
+  final hubConnection = HubConnectionBuilder()
+      .withUrl("https://db4c-105-186-246-233.in.ngrok.io/trackinghub")
+      .build();
 
   @override
   void initState() {
     super.initState();
+    hubConnection.on("ReceiveMessage", receiveMessage);
 
-    _bloc.add(GetMyCurrentLocation());
+    hubConnection.start();
+    timer = Timer.periodic(Duration(seconds: 5), (Timer t) async {
+      _bloc.add(GetMyCurrentLocation());
+
+      final result = await hubConnection.invoke("SendMessage", args: <Object>
+          //update accordingly
+          ["Joanita", _currentLocation.toString()]);
+    });
   }
 
   @override
@@ -141,4 +167,9 @@ class _MapScreenState extends State<MapScreen> {
       ),
     );
   }
+
+  void receiveMessage(List<Object?>? parameters) {
+    print(parameters.toString());
+  }
+  //update the marker for other users
 }
