@@ -38,8 +38,9 @@ class _MapScreenState extends State<MapScreen> {
   LatLng? _currentLocation;
   Timer? timer;
 
-  final hubConnection = HubConnectionBuilder()
+  HubConnection hubConnection = HubConnectionBuilder()
       .withUrl("https://db4c-105-186-246-233.in.ngrok.io/trackinghub")
+      .withAutomaticReconnect()
       .build();
 
   @override
@@ -101,12 +102,15 @@ class _MapScreenState extends State<MapScreen> {
             focusOnMyLocation = false;
           }
         } else if (state is MeetupLocationShared) {
-          await hubConnection.invoke("SetMeetupLocation", args: <Object>
-              //update accordingly
-              [
-            state.sharedLocation.latitude.toString(),
-            state.sharedLocation.longitude.toString()
-          ]);
+          await _reinitHub();
+          if (hubConnection.state == HubConnectionState.Connected) {
+            await hubConnection.invoke("SetMeetupLocation", args: <Object>
+                //update accordingly
+                [
+              state.sharedLocation.latitude.toString(),
+              state.sharedLocation.longitude.toString()
+            ]);
+          }
         } else if (state is MapScreenError) {}
       }),
       child: Stack(
@@ -125,6 +129,8 @@ class _MapScreenState extends State<MapScreen> {
               top: 10,
               child: InkWell(
                   onTap: () async {
+                    await hubConnection.stop();
+
                     var place = await PlacesAutocomplete.show(
                         context: context,
                         apiKey: googleApikey,
@@ -214,7 +220,6 @@ class _MapScreenState extends State<MapScreen> {
           Marker(
             markerId: const MarkerId("meetup"),
             position: meetupLocation,
-            icon: BitmapDescriptor.defaultMarker,
           ),
         );
       });
@@ -229,5 +234,18 @@ class _MapScreenState extends State<MapScreen> {
         markerIcon = icon;
       }),
     );
+  }
+
+  Future<void> _reinitHub() async {
+    hubConnection = HubConnectionBuilder()
+        .withUrl("https://db4c-105-186-246-233.in.ngrok.io/trackinghub")
+        .withAutomaticReconnect(
+      retryDelays: [10, 20, 30],
+    ).build();
+
+    hubConnection.on("ReceiveMessage", receiveMessage);
+    hubConnection.on("ReceiveMeetupLocation", receiveMeetup);
+
+    await hubConnection.start();
   }
 }
