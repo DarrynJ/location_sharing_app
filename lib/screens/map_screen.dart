@@ -32,7 +32,10 @@ class _MapScreenState extends State<MapScreen> {
 
   GoogleMapController? _mapController;
   bool focusOnMyLocation = true;
-  BitmapDescriptor markerIcon = BitmapDescriptor.defaultMarker;
+  BitmapDescriptor markerIcon =
+      BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue);
+  BitmapDescriptor agentMarkerIcon =
+      BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange);
   String googleApiKey = "AIzaSyBZ4RG4eWW2h_OdquCjr1_d-6bnoIB6U1E";
   String location = "Search Location";
 
@@ -47,7 +50,7 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     super.initState();
     _bloc.add(GetMyCurrentLocation());
-    // addCustomIcon();
+    addCustomIcon();
 
     hubConnection.on("ReceiveMessage", receiveMessage);
     hubConnection.on("ReceiveMeetupLocation", receiveMeetup);
@@ -58,21 +61,22 @@ class _MapScreenState extends State<MapScreen> {
     var count = 1;
     timer = Timer.periodic(const Duration(seconds: 5), (Timer t) async {
       _bloc.add(GetMyCurrentLocation());
-      final lat = initialLocation.latitude + (0.0002 * count++);
-      final long = initialLocation.longitude + (0.0002 * count++);
+      final lat = _userCurrentLocation!.latitude + (0.0002 * count++);
+      final long = _userCurrentLocation!.longitude + (0.0002 * count++);
       _userCurrentLocation = LatLng(lat, long);
 
-      setState(() {
-        _markers.removeWhere(
-            (element) => element.markerId.value == "Current location");
-        _markers.add(
-          Marker(
-            markerId: MarkerId("Current location"),
-            position: _userCurrentLocation!,
-          ),
-        );
-        hubConnection;
-      });
+      // setState(() {
+      //   _markers.removeWhere(
+      //       (element) => element.markerId.value == "Current location");
+      //   _markers.add(
+      //     Marker(
+      //       markerId: MarkerId("Current location"),
+      //       position: _userCurrentLocation!,
+      //       icon: markerIcon,
+      //     ),
+      //   );
+      //   hubConnection;
+      // });
 
       if (hubConnection.state == HubConnectionState.Disconnected) {
         await hubConnection.start();
@@ -106,6 +110,7 @@ class _MapScreenState extends State<MapScreen> {
               Marker(
                 markerId: const MarkerId("Current location"),
                 position: _userCurrentLocation!,
+                icon: markerIcon,
               ),
             );
           });
@@ -223,8 +228,8 @@ class _MapScreenState extends State<MapScreen> {
     if (parameters != null && parameters.isNotEmpty) {
       debugPrint('UPDATE MEETUP');
 
-      var latitude = parameters[1].toString();
-      var longitude = parameters[2].toString();
+      var latitude = parameters[0].toString();
+      var longitude = parameters[1].toString();
 
       final LatLng meetupLocation =
           LatLng(double.parse(latitude), double.parse(longitude));
@@ -232,15 +237,15 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  // void addCustomIcon() {
-  //   BitmapDescriptor.fromAssetImage(
-  //           const ImageConfiguration(), "assets/images/wbclogo.png")
-  //       .then(
-  //     (icon) => setState(() {
-  //       markerIcon = icon;
-  //     }),
-  //   );
-  // }
+  void addCustomIcon() {
+    // BitmapDescriptor.fromAssetImage(
+    //         const ImageConfiguration(), "assets/images/wbclogo.png")
+    //     .then(
+    //   (icon) => setState(() {
+    //     markerIcon = icon;
+    //   }),
+    // );
+  }
 
   Future<void> _reInitHub() async {
     hubConnection = HubConnectionBuilder()
@@ -275,9 +280,9 @@ class _MapScreenState extends State<MapScreen> {
         _markers.removeWhere((element) => element.markerId.value == markerId);
         _markers.add(
           Marker(
-            markerId: MarkerId(markerId),
-            position: location,
-          ),
+              markerId: MarkerId(markerId),
+              position: location,
+              icon: agentMarkerIcon),
         );
         hubConnection;
         // hubConnection = openHubConnection();
